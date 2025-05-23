@@ -17,13 +17,40 @@ struct GoalsView: View {
     var body: some View {
         NavigationStack {
             List {
-                ForEach(goals) { goal in
-                    GoalCardView(goal: goal)
-                        .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
-                                context.delete(goal)
-                            } label: { Label("刪除", systemImage: "trash") }
+                // 夢想
+                Section("夢想") {
+                    ForEach(goals.filter { $0.kind == .dream }, id: \.id) { g in
+                        NavigationLink { GoalDetailView(goal: g) } label: {
+                            SimpleGoalRow(goal: g)
                         }
+                    }
+                    .onDelete { indexSet in
+                        for idx in indexSet { context.delete(goals.filter{ $0.kind == .dream }[idx]) }
+                    }
+                }
+
+                // 未完成目標
+                Section("進行中目標") {
+                    ForEach(goals.filter { $0.kind == .target && $0.progress < 1 }, id: \.id) { g in
+                        NavigationLink { GoalDetailView(goal: g) } label: {
+                            SimpleGoalRow(goal: g)
+                        }
+                    }
+                    .onDelete { indexSet in
+                        for idx in indexSet { context.delete(goals.filter{ $0.kind == .dream }[idx]) }
+                    }
+                }
+
+                // 已完成
+                Section("已完成目標") {
+                    ForEach(goals.filter { $0.kind == .target && $0.progress >= 1 }, id: \.id) { g in
+                        NavigationLink { GoalDetailView(goal: g) } label: {
+                            SimpleGoalRow(goal: g)
+                        }
+                    }
+                    .onDelete { indexSet in
+                        for idx in indexSet { context.delete(goals.filter{ $0.kind == .dream }[idx]) }
+                    }
                 }
             }
             .navigationTitle("目標")
@@ -65,9 +92,12 @@ struct AddGoalView: View {
 
                 if kind == .target {
                     DatePicker("截止日期", selection: $targetDate, displayedComponents: .date)
-                    Slider(value: $progress, in: 0...1) {
-                        Text("進度")
-                    }
+                }
+                
+                HStack {
+                    Text("進度 : \(Int(progress * 100))%")
+                    Spacer()
+                    Slider(value: $progress, in: 0...1)
                 }
             }
             .navigationTitle("新增目標")

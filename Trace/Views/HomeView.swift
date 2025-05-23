@@ -38,15 +38,20 @@ struct HomeView: View {
                     }
 
 
-                    // 最近日記
-                    if let latest = entries.first {
+                    // 最新三篇
+                    if !entries.isEmpty {
                         SectionHeader("最新日記")
-                        JournalCardView(entry: latest)
+                        ForEach(entries.prefix(3)) { e in
+                            NavigationLink { DiaryDetailView(entry: e) } label: {
+                                JournalCardView(entry: e)
+                            }
+                        }
                     }
 
                     // 快速新增
                     Button {
                         // 可導向 Journal 新增
+                        showAdd = true 
                     } label: {
                         Label("快速新增日記", systemImage: "plus.circle")
                             .font(.title3)

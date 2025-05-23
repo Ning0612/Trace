@@ -13,14 +13,16 @@ struct JournalView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \DiaryEntry.date, order: .reverse, animation: .default)
     private var entries: [DiaryEntry]
-
+    
     @State private var showAdd = false
 
     var body: some View {
         NavigationStack {
             List {
                 ForEach(entries) { entry in
-                    JournalCardView(entry: entry)
+                    NavigationLink { DiaryDetailView(entry: entry) } label: {
+                        JournalCardView(entry: entry)
+                    }
                 }
                 .onDelete { indexSet in
                     for index in indexSet {
@@ -45,12 +47,17 @@ struct JournalView: View {
 struct AddEntryView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
-
+    
+    @State private var date = Date()
     @State private var text = ""
     @State private var title = ""
     @State private var mood = 3
     @State private var photo: PhotosPickerItem?
     @State private var imageData: Data?
+    @State private var selectedGoal: Goal?
+
+    
+    @Query var allGoals: [Goal]
 
     var body: some View {
         NavigationStack {
@@ -67,6 +74,27 @@ struct AddEntryView: View {
                 
                 Section("標題") {
                     TextField("輸入標題", text: $title)
+                }
+                
+                Section("關聯目標") {
+                    Menu {
+                        // 以搜尋欄形式列出全部目標／夢想
+                        ForEach(allGoals, id: \.id) { g in
+                            Button(g.title) { selectedGoal = g }
+                        }
+                        if selectedGoal != nil {
+                            Button(role: .destructive, action: { selectedGoal = nil }) {
+                                Text("清除選擇")
+                            }
+                        }
+                    } label: {
+                        Text(selectedGoal?.title ?? "未選擇")
+                            .foregroundStyle(selectedGoal == nil ? .secondary : .primary)
+                    }
+                }
+                
+                Section("日期") {
+                    DatePicker("選擇日期", selection: $date, displayedComponents: .date)
                 }
 
                 Section("內容") {
@@ -96,9 +124,11 @@ struct AddEntryView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("儲存") {
                         let entry = DiaryEntry(title: title,
+                                               date: date,
                                                text: text,
                                                moodScore: mood,
-                                               imageData: imageData)
+                                               imageData: imageData,
+                                               goal: selectedGoal)
                         context.insert(entry)
                         try? context.save()
                         dismiss()
