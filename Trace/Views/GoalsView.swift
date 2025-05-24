@@ -5,6 +5,13 @@
 //  Created by 王政甯 on 2025/5/23.
 //
 
+//
+//  GoalsView.swift
+//  Trace
+//
+//  Created by 王政甯 on 2025/5/23.
+//
+
 import SwiftUI
 import SwiftData
 
@@ -13,58 +20,57 @@ struct GoalsView: View {
     @Query(animation: .default) private var goals: [Goal]
 
     @State private var showAdd = false
+    @State private var pendingDelete: Goal?
+    @State private var showConfirm = false
 
     var body: some View {
         NavigationStack {
+            // 預先切三類，減少型別推斷負擔
+            let dreams      = goals.filter { $0.kind == .dream }
+            let inProgress  = goals.filter { $0.kind == .target && $0.progress < 1 }
+            let finished    = goals.filter { $0.kind == .target && $0.progress >= 1 }
+
             List {
-                // 夢想
-                Section("夢想") {
-                    ForEach(goals.filter { $0.kind == .dream }, id: \.id) { g in
-                        NavigationLink { GoalDetailView(goal: g) } label: {
-                            SimpleGoalRow(goal: g)
-                        }
-                    }
-                    .onDelete { indexSet in
-                        for idx in indexSet { context.delete(goals.filter{ $0.kind == .dream }[idx]) }
-                    }
+                Section("夢想")          { goalRows(dreams) }
+                Section("進行中目標")    { goalRows(inProgress) }
+                Section("已完成目標")    { goalRows(finished) }
+            }
+            .alert("確定要刪除？",
+                   isPresented: $showConfirm,
+                   presenting: pendingDelete) { g in
+                Button("刪除", role: .destructive) {
+                    context.delete(g)
+                    try? context.save()
                 }
-
-                // 未完成目標
-                Section("進行中目標") {
-                    ForEach(goals.filter { $0.kind == .target && $0.progress < 1 }, id: \.id) { g in
-                        NavigationLink { GoalDetailView(goal: g) } label: {
-                            SimpleGoalRow(goal: g)
-                        }
-                    }
-                    .onDelete { indexSet in
-                        for idx in indexSet { context.delete(goals.filter{ $0.kind == .dream }[idx]) }
-                    }
-                }
-
-                // 已完成
-                Section("已完成目標") {
-                    ForEach(goals.filter { $0.kind == .target && $0.progress >= 1 }, id: \.id) { g in
-                        NavigationLink { GoalDetailView(goal: g) } label: {
-                            SimpleGoalRow(goal: g)
-                        }
-                    }
-                    .onDelete { indexSet in
-                        for idx in indexSet { context.delete(goals.filter{ $0.kind == .dream }[idx]) }
-                    }
-                }
+                Button("取消", role: .cancel) { }
+            } message: { _ in
+                Text("刪除後無法復原")
             }
             .navigationTitle("目標")
             .toolbar {
-                Button { showAdd = true } label: {
-                    Image(systemName: "plus")
-                }
+                Button { showAdd = true } label: { Image(systemName: "plus") }
             }
-            .sheet(isPresented: $showAdd) {
-                AddGoalView()
+            .sheet(isPresented: $showAdd) { AddGoalView() }
+        }
+    }
+
+    /// 產生可刪除列並觸發 alert
+    @ViewBuilder
+    private func goalRows(_ source: [Goal]) -> some View {
+        ForEach(source, id: \.id) { g in
+            NavigationLink { GoalDetailView(goal: g) } label: {
+                SimpleGoalRow(goal: g)
+            }
+        }
+        .onDelete { idx in
+            if let first = idx.first {           // 取被滑掉的那一筆
+                pendingDelete = source[first]
+                showConfirm = true
             }
         }
     }
 }
+
 
 // MARK: - AddGoalView
 struct AddGoalView: View {

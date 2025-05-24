@@ -14,28 +14,45 @@ struct HomeView: View {
 
     @Query(sort: \Goal.createdAt, order: .reverse, animation: .default)
     private var goals: [Goal]
-    
+
     @State private var showAdd = false
+
 
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    // Progress 百分比計算範例（HomeView 內）
-                    if let nearest = goals.filter({ $0.targetDate != nil })
-                                          .sorted(by: { $0.targetDate! < $1.targetDate! })
-                                          .first,
-                       let d = nearest.targetDate {
+                    // 取一個未完成 dream
+                    
+                    // 1. 未完成夢想，依進度排序取 3
+                    let topDreams = goals
+                        .filter { $0.kind == .dream && $0.progress < 1 }
+                        .sorted { $0.progress > $1.progress }
+                        //.prefix(3)
 
-                        let remaining = max(0, d.timeIntervalSinceNow)
-                        let total     = max(1, d.timeIntervalSince(nearest.createdAt))
-                        let ratio     = 1.0 - remaining / total
+                    // 2. 未完成目標，依截止日最近取 3
+                    let topTargets = goals
+                        .filter { $0.kind == .target && $0.progress < 1 && $0.targetDate != nil }
+                        .sorted { $0.targetDate! < $1.targetDate! }
+                        //.prefix(3)
 
-                        ProgressRingView(progress: ratio)
-                            .frame(width: 120, height: 120)
-                            .padding(.bottom, 8)
+                    let topGoals = Array(topDreams) + Array(topTargets)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 16) {
+                            ForEach(topGoals, id: \.id) { g in
+                                NavigationLink {
+                                    GoalDetailView(goal: g)          // 目標／夢想詳細頁
+                                } label: {
+                                    GoalRingView(goal: g)            // 圓環小卡
+                                }
+                                .buttonStyle(.plain)                 // 取消預設藍色高亮
+                            }
+                        }
+                        .padding(.vertical, 8)
                     }
+
 
 
                     // 最新三篇

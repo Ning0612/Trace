@@ -52,9 +52,11 @@ struct GoalDetailView: View {
                         if !goal.detail.isEmpty { Text(goal.detail) }
                         if let due = goal.targetDate {
                             Text("截止：\(DateHelper.dateString(due))")
-                            Text("剩 \(DateHelper.remainingDays(to: due)) 天")
+                            let day = DateHelper.remainingDays(to: due)          // ← ① 新增
+                            Text(day >= 0 ? "剩 \(day) 天" : "已超過 \(abs(day)) 天") // ← ② 改這行
                         }
-                        ProgressView(value: goal.progress)
+                        RingPercentView(progress: goal.progress, size: 120)
+                            .padding(.vertical, 8)
                     }
                 }
             }
@@ -62,7 +64,13 @@ struct GoalDetailView: View {
             Section("關聯日記 \(related.count) 筆") {
                 ForEach(related) { e in
                     NavigationLink { DiaryDetailView(entry: e) } label: {
-                        Text(e.title)
+                        HStack {
+                            Text(e.title)                              // 標題
+                            Spacer()
+                            Text(DateHelper.dateString(e.date))        // 日期
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                 }
             }

@@ -96,7 +96,8 @@ struct GoalCardView: View {
                     .font(.headline)
                 Spacer()
                 if let due = goal.targetDate {
-                    Text("\(DateHelper.remainingDays(to: due)) 天")
+                    let day = DateHelper.remainingDays(to: due)          // ← ① 新增
+                    Text(day >= 0 ? "剩 \(day) 天" : "已超過 \(abs(day)) 天") // ← ② 改這行
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -227,6 +228,32 @@ struct MoodSummaryView: View {
     }
 }
 
+// MARK: - RingPercentView (單一可重用)
+struct RingPercentView: View {
+    var progress: Double          // 0‥1
+    var size: CGFloat             // 直徑
+
+    private var lineWidth: CGFloat { size * 0.12 }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(Color.gray.opacity(0.3), lineWidth: lineWidth)
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(Color.blue,
+                        style: StrokeStyle(lineWidth: lineWidth,
+                                           lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            Text(String(format: "%.0f%%", progress * 100))
+                .font(size < 60 ? .caption2 : .headline)
+                .bold()
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+
 // MARK: - SimpleGoalRow
 struct SimpleGoalRow: View {
     var goal: Goal
@@ -239,35 +266,44 @@ struct SimpleGoalRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                // 左：標題
-                Text(goal.title).font(.headline)
-
-                Spacer(minLength: 8)
-
-                VStack(alignment: .trailing, spacing: 2) {
-                    // 完成度
-                    Text(String(format: "%.0f%%", goal.progress*100))
-                        .font(.caption)
-
-                    // 倒數天（dream 若無截止日期顯示 --）
+            HStack(alignment: .center, spacing: 12) {
+                RingPercentView(progress: goal.progress, size: 60)          // ← 左側進度環
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(goal.title).font(.headline)
                     if goal.kind == .target, let due = goal.targetDate {
-                        let days = DateHelper.remainingDays(to: due)
-                        Text(days >= 0 ?
-                             "剩 \(days) 天" :
-                             "已超過 \(abs(days)) 天")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                        let day = DateHelper.remainingDays(to: due)
+                        Text(day >= 0 ? "剩 \(day) 天" : "已超過 \(abs(day)) 天")
+                            .font(.caption2).foregroundStyle(.secondary)
                     }
+                    if !goal.detail.isEmpty {
+                        Text(goal.detail).lineLimit(1).font(.caption)
+                    }
+                    Text("關聯日記：\(linkCount) 筆").font(.caption2)
                 }
+                Spacer()
             }
-
-
-            if !goal.detail.isEmpty {
-                Text(goal.detail).lineLimit(2).font(.caption)
-            }
-
-            Text("關聯日記：\(linkCount) 筆").font(.caption2)
         }
+    }
+}
+
+// MARK: - GoalRingView (首頁小卡使用)
+struct GoalRingView: View {
+    var goal: Goal
+
+    private var subtitle: String {
+        if goal.kind == .dream { return "夢想" }
+        else if let due = goal.targetDate {
+            let day = DateHelper.remainingDays(to: due)
+            return day >= 0 ? "剩 \(day) 天" : "超 \(abs(day)) 天"
+        } else { return "目標" }
+    }
+
+    var body: some View {
+        VStack(spacing: 6) {
+            RingPercentView(progress: goal.progress, size: 80)   // ★ 圓環加百分比
+            Text(goal.title).font(.caption).multilineTextAlignment(.center).lineLimit(1)
+            Text(subtitle).font(.caption2).foregroundStyle(.secondary)
+        }
+        .frame(width: 90)
     }
 }

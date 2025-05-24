@@ -10,6 +10,8 @@ import SwiftData
 
 struct ReviewView: View {
     @Query private var entries: [DiaryEntry]
+    @Query private var goals: [Goal]
+
 
     private var counts: [Date: Int] {
         Dictionary(grouping: entries) { DateHelper.onlyDate($0.date) }
@@ -34,6 +36,21 @@ struct ReviewView: View {
                 }
                 .font(.subheadline)
                 .padding(.bottom, 8)
+                
+                let finishedGoals = goals.filter { $0.progress >= 1 }
+
+                let yearGoals  = finishedGoals.count
+                let monthGoals = finishedGoals.filter { cal.isDate($0.createdAt, equalTo: Date(), toGranularity: .month) }.count
+                let weekGoals  = finishedGoals.filter { cal.isDate($0.createdAt, equalTo: Date(), toGranularity: .weekOfYear) }.count
+
+                HStack(spacing: 24) {
+                    Label("今年完成目標 \(yearGoals)", systemImage: "flag.checkered")
+                    Label("本月完成 \(monthGoals)", systemImage: "flag")
+                    Label("本週完成 \(weekGoals)", systemImage: "bolt")
+                }
+                .font(.subheadline)
+                .padding(.bottom, 8)
+
 
                 
                 if let week = longest(of: .weekOfYear) {

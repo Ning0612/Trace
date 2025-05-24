@@ -15,6 +15,9 @@ struct JournalView: View {
     private var entries: [DiaryEntry]
     
     @State private var showAdd = false
+    @State private var pendingDiary: DiaryEntry?
+    @State private var confirmDiary = false
+
 
     var body: some View {
         NavigationStack {
@@ -24,10 +27,9 @@ struct JournalView: View {
                         JournalCardView(entry: entry)
                     }
                 }
-                .onDelete { indexSet in
-                    for index in indexSet {
-                        context.delete(entries[index])
-                    }
+                .onDelete { idx in
+                    pendingDiary = entries[idx.first!]
+                    confirmDiary = true
                 }
             }
             .navigationTitle("日記")
@@ -39,6 +41,10 @@ struct JournalView: View {
             .sheet(isPresented: $showAdd) {
                 AddEntryView()
             }
+            .alert("確定要刪除？", isPresented: $confirmDiary, presenting: pendingDiary) { d in
+                Button("刪除", role: .destructive) { context.delete(d); try? context.save() }
+                Button("取消", role: .cancel) { }
+            } message: { _ in Text("刪除後無法復原") }
         }
     }
 }
@@ -52,9 +58,10 @@ struct AddEntryView: View {
     @State private var text = ""
     @State private var title = ""
     @State private var mood = 3
-    @State private var photo: PhotosPickerItem?
-    @State private var imageData: Data?
     @State private var selectedGoal: Goal?
+    
+    @State private var selectedItems: [PhotosPickerItem] = []
+    @State private var imageDatas: [Data] = []   // ← 陣列
 
     
     @Query var allGoals: [Goal]
@@ -102,17 +109,37 @@ struct AddEntryView: View {
                         .frame(height: 120)
                 }
 
+                
                 Section("照片") {
-                    PhotosPicker(selection: $photo, matching: .images) {
-                        Label("選擇照片", systemImage: "photo")
+                    PhotosPicker(
+                        selection: $selectedItems,
+                        maxSelectionCount: 12,                // 任意上限
+                        matching: .images
+                    ) { Label("選擇照片", systemImage: "photo.on.rectangle") }
+
+                    ScrollView(.horizontal) {                // 選取後預覽
+                        HStack {
+                            ForEach(imageDatas, id: \.self) { data in
+                                if let img = UIImage(data: data) {
+                                    Image(uiImage: img)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 80, height: 80)
+                                        .clipped()
+                                        .cornerRadius(6)
+                                }
+                            }
+                        }
                     }
-                    if let data = imageData,
-                       let img = UIImage(data: data) {
-                        Image(uiImage: img)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 150)
-                            .cornerRadius(8)
+                }
+                .onChange(of: selectedItems) { _, newItems in
+                    Task {
+                        imageDatas = []                      // 清空再加入
+                        for item in newItems {
+                            if let data = try? await item.loadTransferable(type: Data.self) {
+                                imageDatas.append(data)
+                            }
+                        }
                     }
                 }
             }
@@ -127,19 +154,13 @@ struct AddEntryView: View {
                                                date: date,
                                                text: text,
                                                moodScore: mood,
-                                               imageData: imageData,
+                                               imageDatas: imageDatas,   // ← 改這裡
                                                goal: selectedGoal)
                         context.insert(entry)
                         try? context.save()
                         dismiss()
-                    }.disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
-            .onChange(of: photo) { _, newItem in
-                Task {
-                    if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                        imageData = data
                     }
+                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
         }

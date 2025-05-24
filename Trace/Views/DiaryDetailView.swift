@@ -7,11 +7,14 @@
 
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 struct DiaryDetailView: View {
     @Environment(\.modelContext) private var context
     @Bindable var entry: DiaryEntry
     @State private var editing = false
+    @State private var picked: [PhotosPickerItem] = []
+
 
     var body: some View {
         Form {
@@ -22,6 +25,21 @@ struct DiaryDetailView: View {
                     ForEach(1...5, id: \.self) { v in Text(String(v)).tag(v) }
                 }.pickerStyle(.segmented)
                 TextEditor(text: $entry.text).frame(height: 120)
+                PhotosPicker(selection: $picked,
+                             maxSelectionCount: 12,
+                             matching: .images) {
+                    Label("重新選擇照片", systemImage: "photo")
+                }
+                .onChange(of: picked) { _, items in
+                    Task {
+                        entry.imageDatas = []
+                        for it in items {
+                            if let d = try? await it.loadTransferable(type: Data.self) {
+                                entry.imageDatas.append(d)
+                            }
+                        }
+                    }
+                }
             } else {
                 VStack(alignment:.leading,spacing:8){
                     HStack{
@@ -31,6 +49,23 @@ struct DiaryDetailView: View {
                     }
                     Text(DateHelper.dateString(entry.date)).foregroundStyle(.secondary)
                     Text(entry.text).padding(.top,4)
+                    if !entry.imageDatas.isEmpty {
+                        ScrollView(.horizontal) {
+                            HStack {
+                                ForEach(entry.imageDatas, id: \.self) { data in
+                                    if let ui = UIImage(data: data) {
+                                        Image(uiImage: ui)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 180, height: 180)
+                                            .clipped()
+                                            .cornerRadius(12)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
         }
