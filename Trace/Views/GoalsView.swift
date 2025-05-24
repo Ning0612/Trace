@@ -20,8 +20,6 @@ struct GoalsView: View {
     @Query(animation: .default) private var goals: [Goal]
 
     @State private var showAdd = false
-    @State private var pendingDelete: Goal?
-    @State private var showConfirm = false
 
     var body: some View {
         NavigationStack {
@@ -35,17 +33,6 @@ struct GoalsView: View {
                 Section("進行中目標")    { goalRows(inProgress) }
                 Section("已完成目標")    { goalRows(finished) }
             }
-            .alert("確定要刪除？",
-                   isPresented: $showConfirm,
-                   presenting: pendingDelete) { g in
-                Button("刪除", role: .destructive) {
-                    context.delete(g)
-                    try? context.save()
-                }
-                Button("取消", role: .cancel) { }
-            } message: { _ in
-                Text("刪除後無法復原")
-            }
             .navigationTitle("目標")
             .toolbar {
                 Button { showAdd = true } label: { Image(systemName: "plus") }
@@ -54,7 +41,7 @@ struct GoalsView: View {
         }
     }
 
-    /// 產生可刪除列並觸發 alert
+    /// 產生可刪除列（直接刪除）
     @ViewBuilder
     private func goalRows(_ source: [Goal]) -> some View {
         ForEach(source, id: \.id) { g in
@@ -62,14 +49,24 @@ struct GoalsView: View {
                 SimpleGoalRow(goal: g)
             }
         }
-        .onDelete { idx in
-            if let first = idx.first {           // 取被滑掉的那一筆
-                pendingDelete = source[first]
-                showConfirm = true
+        .onDelete { idxSet in
+            for index in idxSet {
+                let goal = source[index]
+                do {
+                    let linkedEntries = try context.fetch(FetchDescriptor<DiaryEntry>())
+                    for entry in linkedEntries.filter({ $0.goal?.id == goal.id }) {
+                        entry.goal = nil
+                    }
+                    context.delete(goal)
+                    try context.save()
+                } catch {
+                    print("❌ 刪除目標時發生錯誤：\(error)")
+                }
             }
         }
     }
 }
+
 
 
 // MARK: - AddGoalView

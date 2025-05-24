@@ -66,7 +66,7 @@ struct JournalCardView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(entry.title).font(.headline).foregroundColor(.primary)
-                if let g = entry.goal {         // 關聯目標
+                if let g = entry.goal {
                     Text("🔗 \(g.title)").font(.caption)
                 }
                 Text(entry.text).lineLimit(1).font(.subheadline)

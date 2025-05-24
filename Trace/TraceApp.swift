@@ -13,10 +13,14 @@ struct TraceApp: App {
         let schema = Schema([
             DiaryEntry.self,
             Goal.self,
-            Milestone.self
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-        return try! ModelContainer(for: schema, configurations: [config])
+        let container = try! ModelContainer(for: schema, configurations: [config])
+        
+        // 預載入假資料
+        preloadMockDataIfNeeded(context: container.mainContext)
+        
+        return container
     }()
 
     var body: some Scene {

@@ -1,56 +1,60 @@
+// GrowthGridView.swift
+// Trace — 點擊格子查看當日日記
+
 import SwiftUI
 
-// MARK: - GrowthGridView
 struct GrowthGridView: View {
     var entries: [DiaryEntry]
-    
+
+    // 原本的常數／屬性
     private let cell : CGFloat = 11
     private let gap  : CGFloat = 2
     private var colW: CGFloat { cell + gap }
-    private var rowH: CGFloat { cell + gap}
-    private let weekdayWidth: CGFloat = 28   // 給星期文字的固定寬
+    private var rowH: CGFloat { cell + gap }
+    private let weekdayWidth: CGFloat = 28
 
+    private let cal = Calendar.current
 
-    // 取得所有出現過的年份（含今年），由大到小排列
+    // 取得所有年份（含今年）
     private var years: [Int] {
-        let yearSet = Set(entries.map { Calendar.current.component(.year, from: $0.date) })
-        let thisYear = Calendar.current.component(.year, from: Date())
+        let yearSet = Set(entries.map { cal.component(.year, from: $0.date) })
+        let thisYear = cal.component(.year, from: Date())
         return Array(yearSet.union([thisYear])).sorted(by: >)
     }
 
     @State private var selectedYear: Int = Calendar.current.component(.year, from: Date())
 
-    // 該年所有日記
+    // 篩出當前年份的日記
     private var yearEntries: [DiaryEntry] {
-        entries.filter { Calendar.current.component(.year, from: $0.date) == selectedYear }
+        entries.filter { cal.component(.year, from: $0.date) == selectedYear }
     }
 
-    // 當年每日計數
+    // 每日計數
     private var counts: [Date: Int] {
         Dictionary(grouping: yearEntries) { DateHelper.onlyDate($0.date) }
             .mapValues { $0.count }
     }
 
-    private let cal = Calendar.current
+    // 該年第一個 Sunday 做起點
     private var firstSunday: Date {
-        // 該年 1/1
         let jan1 = cal.date(from: DateComponents(year: selectedYear, month: 1, day: 1))!
-        // 目標條件：weekday = 1 (Sunday)
         let comp  = DateComponents(weekday: 1)
-
-        return cal.nextDate(after: jan1,
-                            matching: comp,
-                            matchingPolicy: .nextTime,
-                            direction: .backward)!
+        return cal.nextDate(
+            after: jan1,
+            matching: comp,
+            matchingPolicy: .nextTime,
+            direction: .backward
+        )!
     }
 
-    private var allDays: [Date] {
-        // 53 週 × 7 = 371，足夠囊括閏年
-        (0..<371).compactMap { cal.date(byAdding: .day, value: $0, to: firstSunday) }
-            .filter { cal.component(.year, from: $0) == selectedYear }
+    // 1 月第一天應落在哪一週（欄位）── 给 colIdxZero
+    private var colIdxZero: Int {
+        let dt = cal.date(from: DateComponents(year: selectedYear, month: 1, day: 1))!
+        let daysDiff = cal.dateComponents([.day], from: firstSunday, to: dt).day ?? 0
+        return max(0, daysDiff / 7)
     }
 
-    // 顏色邏輯
+    // 著色邏輯（不變）
     private func color(for c: Int) -> Color {
         switch c {
         case 0:  return .black
@@ -62,12 +66,17 @@ struct GrowthGridView: View {
         }
     }
 
+    // 取得某天所有日記
+    private func entries(on date: Date) -> [DiaryEntry] {
+        yearEntries.filter { DateHelper.onlyDate($0.date) == DateHelper.onlyDate(date) }
+    }
+
     var body: some View {
         HStack(spacing: gap) {
 
-            // --- 左側星期列 (Mon Wed Fri) ---
+            // 左側：Mon / Wed / Fri
             VStack(alignment: .leading, spacing: rowH) {
-                Color.clear.frame(height: 3)      // Sun 行佔位
+                Color.clear.frame(height: 3) // Sun 佔位
                 Text("Mon").font(.caption2)
                 Text("Wed").font(.caption2)
                 Text("Fri").font(.caption2)
@@ -75,11 +84,11 @@ struct GrowthGridView: View {
             .frame(width: weekdayWidth, alignment: .leading)
             .foregroundStyle(.secondary)
 
-
-            // --- 右側可滑動內容 (月份列 + 貢獻格) ---
+            // 中央：可滑動區（月份列＋格子）
             ScrollView(.horizontal, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: gap) {
 
+                    // 月份列（不變，只留空位到第一個月）
                     ZStack(alignment: .topLeading) {
                         ForEach(1...12, id: \.self) { m in
                             if let monthStart = cal.date(from: DateComponents(year: selectedYear, month: m, day: 1)) {
@@ -103,22 +112,35 @@ struct GrowthGridView: View {
                     .frame(height: cell)
                     .padding(.top, gap)
 
-
-
-                    // 2-B 貢獻格 7 行（Sun~Sat）
+                    // 格子區：7 行 × 53 週
                     HStack(spacing: gap) {
                         ForEach(0..<53, id: \.self) { col in
                             VStack(spacing: gap) {
                                 ForEach(0..<7, id: \.self) { row in
-                                    if let day = cal.date(byAdding: .day, value: col*7 + row, to: firstSunday),
+                                    let maybeDay = cal.date(
+                                        byAdding: .day,
+                                        value: col * 7 + row,
+                                        to: firstSunday
+                                    )
+                                    if let day = maybeDay,
                                        cal.component(.year, from: day) == selectedYear {
-                                        Rectangle()
-                                            .fill(color(for: counts[day, default: 0]))
-                                            .frame(width: cell, height: cell)
-                                            .overlay(
-                                                Rectangle()
-                                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                        // ★ 在這裡把原先的 Rectangle 用 NavigationLink 包起來
+                                        NavigationLink {
+                                            // 目的頁：顯示該日所有日記
+                                            DayEntriesView(
+                                                date: day,
+                                                entries: entries(on: day)
                                             )
+                                        } label: {
+                                            Rectangle()
+                                                .fill(color(for: counts[day, default: 0]))
+                                                .frame(width: cell, height: cell)
+                                                .overlay(
+                                                    Rectangle()
+                                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                                )
+                                        }
+                                        .buttonStyle(.plain) // 去除藍色框
                                     } else {
                                         Rectangle()
                                             .fill(Color.clear)
@@ -129,11 +151,10 @@ struct GrowthGridView: View {
                         }
                     }
                 }
-                .padding(.leading, 0)             // Scroll 區內不再需要額外 left padding
+                .padding(.leading, 0)
             }
-            .frame(height: rowH * 7 + 30)              // 7 行高度
-            
-            // 放在外層 HStack 右邊，改成可垂直滾動
+            .frame(height: rowH * 8) // 1 行月 + 7 行
+
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 8) {
                     ForEach(years, id: \.self) { y in
@@ -151,5 +172,24 @@ struct GrowthGridView: View {
             // 高度跟主圖表一樣，讓超出的部分可滾動
             .frame(height: rowH * 7 + 30)
         }
+    }
+}
+
+// 新增這個子畫面：點格子後跳到這裡，顯示該天的日記列表
+struct DayEntriesView: View {
+    let date: Date
+    let entries: [DiaryEntry]
+
+    var body: some View {
+        List {
+            ForEach(entries) { entry in
+                NavigationLink {
+                    DiaryDetailView(entry: entry)
+                } label: {
+                    JournalCardView(entry: entry)
+                }
+            }
+        }
+        .navigationTitle(DateHelper.dateString(date))
     }
 }

@@ -15,9 +15,6 @@ struct JournalView: View {
     private var entries: [DiaryEntry]
     
     @State private var showAdd = false
-    @State private var pendingDiary: DiaryEntry?
-    @State private var confirmDiary = false
-
 
     var body: some View {
         NavigationStack {
@@ -27,9 +24,12 @@ struct JournalView: View {
                         JournalCardView(entry: entry)
                     }
                 }
-                .onDelete { idx in
-                    pendingDiary = entries[idx.first!]
-                    confirmDiary = true
+                .onDelete { idxSet in
+                    for idx in idxSet {
+                        let entry = entries[idx]
+                        context.delete(entry)
+                    }
+                    try? context.save()
                 }
             }
             .navigationTitle("日記")
@@ -41,10 +41,6 @@ struct JournalView: View {
             .sheet(isPresented: $showAdd) {
                 AddEntryView()
             }
-            .alert("確定要刪除？", isPresented: $confirmDiary, presenting: pendingDiary) { d in
-                Button("刪除", role: .destructive) { context.delete(d); try? context.save() }
-                Button("取消", role: .cancel) { }
-            } message: { _ in Text("刪除後無法復原") }
         }
     }
 }

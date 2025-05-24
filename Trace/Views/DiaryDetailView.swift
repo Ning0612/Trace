@@ -22,8 +22,10 @@ struct DiaryDetailView: View {
                 TextField("標題", text: $entry.title)
                 DatePicker("日期", selection: $entry.date, displayedComponents: .date)
                 Picker("心情", selection: $entry.moodScore) {
-                    ForEach(1...5, id: \.self) { v in Text(String(v)).tag(v) }
-                }.pickerStyle(.segmented)
+                    ForEach(1...5, id: \.self) { v in
+                        Text(emoji(for: v)).tag(v)
+                    }
+                }
                 TextEditor(text: $entry.text).frame(height: 120)
                 PhotosPicker(selection: $picked,
                              maxSelectionCount: 12,
@@ -77,4 +79,15 @@ struct DiaryDetailView: View {
             }
         }
     }
+    
+    private func emoji(for value: Int) -> String {
+        switch value {
+        case ..<2: "😢"
+        case 2:    "😐"
+        case 3:    "🙂"
+        case 4:    "😊"
+        default:   "😄"
+        }
+    }
+
 }

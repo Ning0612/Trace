@@ -31,38 +31,46 @@ struct ReviewView: View {
                 let totalWeek  = entries.filter { cal.isDate($0.date, equalTo: Date(), toGranularity: .weekOfYear) }.count
 
                 HStack(spacing: 24) {
-                    Label("今年 \(totalYear)", systemImage: "calendar")
-                    Label("本月 \(totalMonth)", systemImage: "calendar.badge.clock")
-                    Label("本週 \(totalWeek)", systemImage: "clock")
+                    Label("今年紀錄 \(totalYear)", systemImage: "calendar")
+                    Label("本月紀錄 \(totalMonth)", systemImage: "calendar.badge.clock")
+                    Label("本週紀錄 \(totalWeek)", systemImage: "clock")
                 }
                 .font(.subheadline)
                 .padding(.bottom, 8)
                 
                 let finishedGoals = goals.filter { $0.progress >= 1 }
 
-                let yearGoals  = finishedGoals.count
-                let monthGoals = finishedGoals.filter { cal.isDate($0.createdAt, equalTo: Date(), toGranularity: .month) }.count
-                let weekGoals  = finishedGoals.filter { cal.isDate($0.createdAt, equalTo: Date(), toGranularity: .weekOfYear) }.count
+                // 今年完成：targetDate 在今年
+                let yearGoals = finishedGoals.filter {
+                    if let due = $0.targetDate {
+                        return cal.isDate(due, equalTo: Date(), toGranularity: .year)
+                    }
+                    return false
+                }.count
+
+                // 本月完成：targetDate 在本月
+                let monthGoals = finishedGoals.filter {
+                    if let due = $0.targetDate {
+                        return cal.isDate(due, equalTo: Date(), toGranularity: .month)
+                    }
+                    return false
+                }.count
+
+                // 本週完成：targetDate 在本週
+                let weekGoals = finishedGoals.filter {
+                    if let due = $0.targetDate {
+                        return cal.isDate(due, equalTo: Date(), toGranularity: .weekOfYear)
+                    }
+                    return false
+                }.count
 
                 HStack(spacing: 24) {
                     Label("今年完成目標 \(yearGoals)", systemImage: "flag.checkered")
-                    Label("本月完成 \(monthGoals)", systemImage: "flag")
-                    Label("本週完成 \(weekGoals)", systemImage: "bolt")
+                    Label("本月完成目標 \(monthGoals)", systemImage: "flag")
+                    Label("本週完成目標 \(weekGoals)", systemImage: "bolt")
                 }
                 .font(.subheadline)
                 .padding(.bottom, 8)
-
-
-                
-                if let week = longest(of: .weekOfYear) {
-                    DiarySnippet(title: "本週回顧", entry: week)
-                }
-                if let month = longest(of: .month) {
-                    DiarySnippet(title: "本月回顧", entry: month)
-                }
-                if let lastYear = longestOneYearAgo() {
-                    DiarySnippet(title: "一年前的今天", entry: lastYear)
-                }
 
             }
             .navigationTitle("成長回顧")
