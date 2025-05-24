@@ -17,8 +17,6 @@ struct HomeView: View {
 
     @State private var showAdd = false
 
-
-
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -52,6 +50,18 @@ struct HomeView: View {
                         }
                         .padding(.vertical, 8)
                     }
+                    
+                    // ① 先計算今天的日記數
+                    let cal = Calendar.current
+                    let todayCount = entries.filter { cal.isDate($0.date, inSameDayAs: Date()) }.count
+
+                    // ② 在畫面中加入統計顯示（放在最新日記標題之前）
+                    HStack {
+                        Image(systemName: "book.closed")          // 小圖示
+                        Text("今日日記：\(todayCount) 筆")
+                            .font(.headline)
+                    }
+                    .padding(.vertical, 4)
 
 
 

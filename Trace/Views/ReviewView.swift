@@ -21,7 +21,8 @@ struct ReviewView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                YearHeatmapView(counts: counts)
+                GrowthGridView(entries: entries).padding(.bottom, 8)
+
                 
                 // 今年、本月、本週 線上統計
                 let cal = Calendar.current
