@@ -224,6 +224,7 @@ struct ReviewView: View {
                 }
             }
             .navigationTitle("成長回顧")
+            .padding(4)
         }
     }
     
