@@ -1,5 +1,9 @@
-// GrowthGridView.swift
-// Trace — 點擊格子查看當日日記
+//
+//  GrowthGridView.swift
+//  Trace
+//
+//  Created by 王政甯 on 2025/5/23.
+//
 
 import SwiftUI
 

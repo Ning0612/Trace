@@ -5,13 +5,6 @@
 //  Created by 王政甯 on 2025/5/23.
 //
 
-//
-//  GoalsView.swift
-//  Trace
-//
-//  Created by 王政甯 on 2025/5/23.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -25,8 +18,22 @@ struct GoalsView: View {
         NavigationStack {
             // 預先切三類，減少型別推斷負擔
             let dreams      = goals.filter { $0.kind == .dream }
-            let inProgress  = goals.filter { $0.kind == .target && $0.progress < 1 }
-            let finished    = goals.filter { $0.kind == .target && $0.progress >= 1 }
+            // 尚未完成的目標 → 按「最近到期」由近到遠排序
+            let inProgress = goals
+                .filter { $0.kind == .target && $0.progress < 1 }
+                .sorted {
+                    // 取出非 nil 的 targetDate，再由小到大
+                    ($0.targetDate ?? .distantFuture) < ($1.targetDate ?? .distantFuture)
+                }
+
+            // 已完成的目標 → 按「最接近今天的到期日」由近到遠排序
+            let finished = goals
+                .filter { $0.kind == .target && $0.progress >= 1 }
+                .sorted {
+                    let d0 = ($0.targetDate ?? .distantPast).timeIntervalSinceNow
+                    let d1 = ($1.targetDate ?? .distantPast).timeIntervalSinceNow
+                    return d0 > d1
+                }
 
             List {
                 Section("夢想")          { goalRows(dreams) }

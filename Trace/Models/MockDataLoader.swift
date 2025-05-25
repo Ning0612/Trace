@@ -39,36 +39,40 @@ func preloadMockDataIfNeeded(context: ModelContext) {
     let goals: [(String, String, Double, String, [(String, String)])] = [
 
         ("iOS Final Project Game", "2025-06-04", 1.0,
-         "利用西瓜遊戲的玩法設計「CompBall」——將電腦組成元件一顆顆合成升級，從電晶體合成到整台電腦。不只是遊戲，也希望讓玩家邊玩邊理解資訊工程的核心概念。",
+         "CompBall 是一款結合電腦組成原理的合成益智遊戲，靈感來自《西瓜遊戲》。玩家透過合成電晶體、邏輯閘等元件，一路升級到完整電腦。這個遊戲不只是玩樂，更是我試圖讓資訊工程知識以互動方式呈現的第一次挑戰。",
          [
-            ("合成動畫完成", "CompBall 每次升級會加入光暈動畫，增加合成的爽感。"),
-            ("ALU → CU 過程卡住", "邏輯閘太難分出哪些能合成，多工器還沒做出來。"),
-            ("爆倉處理修好了", "設定邊界邏輯後，如果球出界會自動 trigger 結束，感覺完整多了。")
-        ]),
-
-        ("iOS Final Project APP", "2025-06-04", 0.5,
-         "Trace 是一個幫助使用者記錄自己生活與成長的 App。從照片、文字、語音記錄當下，到追蹤目標與倒數天數，幫助使用者「看見自己一路走來的變化」。",
+            ("基本架構完成", "場景、物理碰撞、球體生成邏輯都跑起來了，整體流程已經很穩定。"),
+            ("合成邏輯與延遲優化", "修正碰撞時的合成節奏，加入延遲動畫讓合體更自然、更有爽感。"),
+            ("處理暫停邏輯", "新增暫停功能＋重新開始選項，處理中斷與 resume 的小 bug 花了不少時間。"),
+            ("美術素材美化完成", "替換掉原本的 debug 風格球圖，加上發光動畫與主題配色後，整體質感有感提升。")
+         ]),
+        
+        ("iOS Final Project APP", "2025-06-04", 0.8,
+         "Trace 是一個記錄生活與成長軌跡的個人追蹤 App。初步架構與主要功能完成，但原本想實作的辭彙分析、AI 小幫手等進階功能因時間不夠只好暫緩。這是我第一次嘗試設計帶情感與目標性的工具，也體會到從無到有的每一步都不容易。",
          [
-            ("夢想牆畫面初步完成", "Trace App 目標區塊可以顯示倒數天數，看起來蠻療癒的。"),
+            ("初步架構完成", "基本的 SwiftData 模型與 UI 互動已經順利跑起來，資料也能保存。"),
+            ("夢想牆畫面實作", "可以顯示倒數天數，還設計了圖示與進度條，視覺上有達到想像。"),
             ("加入 SwiftData 模型錯誤", "container 沒初始化導致整個 app 崩潰，debug 半天才找到原因。"),
-            ("一人做兩個專案真的爆炸", "Game 和 App 都還沒收尾，時間壓力快頂不住。")
-        ]),
+            ("辭彙分析來不及實作", "原本想加 NLP 分析日記情緒，但現在只能先做最基礎功能。"),
+            ("一人做兩個專案真的爆炸", "Game 和 App 都還沒收尾，時間壓力快頂不住，但也感覺到自己撐住了不少。")
+         ]),
 
         ("Compiler Project 3 Code Generation", "2025-06-10", 0.0,
          "專案的最後階段，要把 AST 轉成中介碼甚至實際機器碼。這部分要處理 register 分配、block 結構與指令序列安排，是整個編譯器實作中最貼近「輸出程式碼」的一步。",
          [
             ("第一個 IR 模板", "試著產生 basic block，但 register 分配還沒搞懂。"),
-            ("LLIR vs MIPS", "不知道要不要產生虛擬碼再轉 MIPS，還在看其他人的作法。"),
+            ("移除不使用文法", "把不需實作的文法都移除，尤其是陣列的實作，因為目前沒有實際使用。"),
             ("進度嚴重落後", "完全沒動靜，快來不及了，可能要通宵。")
         ]),
 
         ("Compiler Project 2 Parser", "2025-05-20", 1.0,
-         "根據文法製作語法分析器，實作 Predictive Parsing、左因子化與 LL(1) 分析。從原始 token 到語法樹，是實現語意之前不可或缺的一步。",
+         "一開始卡在文法設計，Predictive Parsing 的 left factoring 很煩，後來做了語意檢查、嘗試 Constant folding，但踩了一堆 memory 問題，debug 到快瘋掉。",
          [
-            ("Predictive Parser 成功運作", "根據 LL(1) grammar 製作了 transition diagram，超級有成就感。"),
-            ("Left Factoring 處理", "原本 grammar 有 ambiguity，左因子化後終於能跑。"),
-            ("Derivation Tree 測試通過", "五筆測資都能產出正確 derivation tree，應該可以交了。")
-        ]),
+            ("語意分析初體驗", "第一次自己寫 semantic checker，光是型別對應就超麻煩。"),
+            ("嘗試 Constant Folding", "設計了簡單 AST 優化規則，可以在 parse 階段直接化簡 3+5。"),
+            ("new 與 delete 地獄", "new 了一堆 node 結果忘了 delete，跑一跑直接 segfault。"),
+            ("以為交得出去…", "昨天還以為可以交，結果 parser 又突然 parse 錯誤格式就爆炸。")
+         ]),
 
         ("Compiler Project 2 Scanner", "2025-04-17", 1.0,
          "用正規表示法描述語言語彙，建立掃描器以產生正確的 token。這是從文字到程式語意的第一道關卡，也讓我學會了怎麼精準分析字串結構。",
@@ -121,7 +125,10 @@ func preloadMockDataIfNeeded(context: ModelContext) {
          "在壓力之中找到自己的節奏，用創作做出自己想用的產品、寫出真正想寫的文字，而不只是為了交作業或拿分數。",
          [
             ("創業點子筆記", "想到可以做開源日記工具，結合情緒分析與 tag 系統。"),
-            ("試著當自己產品經理", "設計了一週的 app wireframe，想想就覺得興奮。")
+            ("試著當自己產品經理", "設計了一週的 app wireframe，想想就覺得興奮。"),
+            ("修改電子紙時鐘", "把之前的 e-ink 時鐘改成可以抓氣象資料來顯示溫度與天氣狀況，感覺很實用。"),
+            ("逛 2025 Computex", "現場看到很多 AI PC、新型筆電與超輕量顯示器，讓人腦洞大開，靈感爆炸。"),
+            ("期末後的犒賞計畫", "決定這學期一結束就要去吃一頓貴一點的日式燒肉，好好慰勞自己。")
          ]),
         ("保持健康",
          "程式人生也該有好體能。想建立早睡、運動、飲食控制的習慣，讓生活不只寫 code，也寫出健康。",
@@ -140,8 +147,36 @@ func preloadMockDataIfNeeded(context: ModelContext) {
             imageName: "heart"
         )
         context.insert(goal)
-        insertDiary(baseDate: date("2025-06-04"), entries: entries, goal: goal)
+        insertDiary(baseDate: date("2025-04-04"), entries: entries, goal: goal)
     }
+    
+    // === 回顧舊資料：一年前的期末 ===
+    let pastGoal = Goal(
+        title: "2024 年下學期期末週",
+        detail: "回顧 2024 年底的期末週，計組、演算法考完後進入報告收尾階段，那年暑假開始感受到學業與壓力同時積累。",
+        kind: .target,
+        targetDate: date("2024-06-06"),
+        progress: 1.0,
+        imageName: "clock"
+    )
+    context.insert(pastGoal)
+
+    let pastDiaries: [(String, String, String)] = [
+        ("計組真的考完了", "2024-06-04", "計組終於考完了，最後一大題的架構根本不知道怎麼畫，但至少有寫點東西。"),
+        ("最後一科也考完了", "2024-06-05", "演算法也考完了，應該輕鬆 Pass，最後一科考完了，剩下兩份報告了。")
+    ]
+
+    for (title, dateStr, text) in pastDiaries {
+        let diary = DiaryEntry(
+            title: title,
+            date: date(dateStr),
+            text: text,
+            moodScore: Int.random(in: 2...4),
+            goal: pastGoal
+        )
+        context.insert(diary)
+    }
+
 
     try? context.save()
 }
