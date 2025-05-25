@@ -123,22 +123,26 @@ struct HomeView: View {
                         guard let lastDate = relatedEntries.map({ $0.date }).max() else { return false }
                         return lastDate < staleThreshold
                     }
-                    if let randomStale = staleGoals.shuffled().first {
-                        SectionHeader("久未更新目標")
+                    if !staleGoals.isEmpty {
+                        // ➤ 點標題看完整列表
                         NavigationLink {
-                            // 列出所有久未更新目標或直接跳至該目標？
-                            List([randomStale]) { g in
-                                NavigationLink {
-                                    GoalDetailView(goal: g)
-                                } label: {
-                                    SimpleGoalRow(goal: g)
-                                }
-                            }
-                            .navigationTitle("久未更新目標列表")
+                            AllStaleGoalsView(goals: staleGoals)
                         } label: {
-                            SimpleGoalRow(goal: randomStale)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 4)
+                            SectionHeader("久未更新目標")
+                        }
+                        .foregroundColor(.primary)
+
+                        // ➤ 隨機一筆的 row
+                        if let randomStale = staleGoals.randomElement() {
+                            NavigationLink {
+                                GoalDetailView(goal: randomStale)
+                            } label: {
+                                SimpleGoalRow(goal: randomStale)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.vertical, 4)
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundColor(.primary)
                         }
                     }
 
@@ -158,6 +162,21 @@ struct HomeView: View {
                 .padding()
             }
             .navigationTitle("Trace")
+        }
+    }
+    
+    struct AllStaleGoalsView: View {
+        let goals: [Goal]
+
+        var body: some View {
+            List(goals, id: \.id) { g in
+                NavigationLink {
+                    GoalDetailView(goal: g)
+                } label: {
+                    SimpleGoalRow(goal: g)
+                }
+            }
+            .navigationTitle("久未更新目標")
         }
     }
 }
