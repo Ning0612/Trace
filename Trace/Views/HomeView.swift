@@ -15,12 +15,13 @@ struct HomeView: View {
     @Query(sort: \Goal.createdAt, order: .reverse, animation: .default)
     private var goals: [Goal]
 
-    @State private var showAdd = false
+    @State private var isAddingEntry = false
+    @State private var isAddingGoal = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 16) {
                     // 取一個未完成 dream
                     
                     // 1. 未完成夢想，依進度排序取 3
@@ -63,43 +64,100 @@ struct HomeView: View {
                     }
                     .padding(.vertical, 4)
 
-
-
-                    // 最新三篇
-                    if !entries.isEmpty {
-                        SectionHeader("最新日記")
-                        ForEach(entries.prefix(3)) { e in
-                            NavigationLink { DiaryDetailView(entry: e) } label: {
-                                JournalCardView(entry: e)
+                    // 快速新增
+                    HStack{
+                        Button(action: {
+                            isAddingEntry.toggle()
+                        }) {
+                            Label("快速新增日記", systemImage: "pencil")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.accentColor)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+                        .sheet(isPresented: $isAddingEntry) {
+                            AddEntryView()
+                        }
+                        
+                        Button(action: {
+                            isAddingGoal.toggle()
+                        }) {
+                            Label("快速新增目標", systemImage: "target")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.green)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+                        .sheet(isPresented: $isAddingGoal) {
+                            AddGoalView()
+                        }
+                    }
+                    
+                    // 1. 即將到期的目標（7 天內）
+                    let upcomingGoals = goals
+                        .filter { $0.progress < 1 && $0.targetDate != nil }
+                        .filter { goal in
+                            let days = cal.dateComponents([.day], from: Date(), to: goal.targetDate!).day ?? 0
+                            return days >= 0 && days <= 7
+                        }
+                    if !upcomingGoals.isEmpty {
+                        SectionHeader("即將到期目標")
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(upcomingGoals) { g in
+                                NavigationLink {
+                                    GoalDetailView(goal: g)
+                                } label: {
+                                    SimpleGoalRow(goal: g)
+                                }
                             }
                         }
                     }
 
-                    // 快速新增
-                    Button {
-                        // 可導向 Journal 新增
-                        showAdd = true 
-                    } label: {
-                        Label("快速新增日記", systemImage: "plus.circle")
-                            .font(.title3)
+                    // 2. 久未更新的目標（尚未完成，30 天未更新，隨機一筆）
+                    let staleThreshold = cal.date(byAdding: .day, value: -30, to: Date())!
+                    let staleGoals = goals.filter { goal in
+                        guard goal.progress < 1 else { return false }
+                        let relatedEntries = entries.filter { $0.goal?.id == goal.id }
+                        guard let lastDate = relatedEntries.map({ $0.date }).max() else { return false }
+                        return lastDate < staleThreshold
                     }
-                    .buttonStyle(.borderedProminent)
+                    if let randomStale = staleGoals.shuffled().first {
+                        SectionHeader("久未更新目標")
+                        NavigationLink {
+                            // 列出所有久未更新目標或直接跳至該目標？
+                            List([randomStale]) { g in
+                                NavigationLink {
+                                    GoalDetailView(goal: g)
+                                } label: {
+                                    SimpleGoalRow(goal: g)
+                                }
+                            }
+                            .navigationTitle("久未更新目標列表")
+                        } label: {
+                            SimpleGoalRow(goal: randomStale)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 4)
+                        }
+                    }
+
+                    // 最新三篇
+                    if !entries.isEmpty {
+                        SectionHeader("最新日記")
+                        VStack(alignment: .leading){
+                            ForEach(entries.prefix(3)) { e in
+                                NavigationLink { DiaryDetailView(entry: e) } label: {
+                                    JournalCardView(entry: e)
+                                }
+                            }
+                        }
+                    }
+
                 }
                 .padding()
             }
             .navigationTitle("Trace")
-        }.toolbar {
-            ToolbarItem(placement: .bottomBar) {
-                Button {
-                    showAdd = true          // ← 開啟 sheet
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.largeTitle)
-                }
-            }
-        }
-        .sheet(isPresented: $showAdd) {
-            AddEntryView()
         }
     }
 }

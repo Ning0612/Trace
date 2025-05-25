@@ -10,15 +10,19 @@ import SwiftData
 
 struct GoalDetailView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
     @Bindable var goal: Goal
 
     @State private var editing = false
+    @State private var showDeleteConfirm = false
 
-    // entries 與 related 同前版
-    @Query private var allEntries: [DiaryEntry]
+    @Query(sort: \DiaryEntry.date, order: .reverse)
+    private var allEntries: [DiaryEntry]
+
     private var related: [DiaryEntry] {
         allEntries.filter { $0.goal?.id == goal.id }
     }
+
     init(goal: Goal) {
         self.goal = goal
         self._allEntries = Query(sort: \DiaryEntry.date, order: .reverse)
@@ -29,7 +33,8 @@ struct GoalDetailView: View {
             Section {
                 if editing {
                     TextField("標題", text: $goal.title)
-                    TextEditor(text: $goal.detail).frame(height: 80)
+                    TextEditor(text: $goal.detail)
+                        .frame(height: 80)
                     if goal.kind == .target {
                         DatePicker(
                             "截止日期",
@@ -40,7 +45,6 @@ struct GoalDetailView: View {
                             displayedComponents: .date
                         )
                     }
-                    
                     HStack {
                         Text("進度 : \(Int(goal.progress * 100))%")
                         Spacer()
@@ -48,12 +52,15 @@ struct GoalDetailView: View {
                     }
                 } else {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(goal.title).font(.title2).bold()
-                        if !goal.detail.isEmpty { Text(goal.detail) }
+                        Text(goal.title)
+                            .font(.title2).bold()
+                        if !goal.detail.isEmpty {
+                            Text(goal.detail)
+                        }
                         if let due = goal.targetDate {
                             Text("截止：\(DateHelper.dateString(due))")
-                            let day = DateHelper.remainingDays(to: due)          // ← ① 新增
-                            Text(day >= 0 ? "剩 \(day) 天" : "已超過 \(abs(day)) 天") // ← ② 改這行
+                            let day = DateHelper.remainingDays(to: due)
+                            Text(day >= 0 ? "剩 \(day) 天" : "已超過 \(abs(day)) 天")
                         }
                         RingPercentView(progress: goal.progress, size: 120)
                             .padding(.vertical, 8)
@@ -63,11 +70,13 @@ struct GoalDetailView: View {
 
             Section("關聯日記 \(related.count) 筆") {
                 ForEach(related) { e in
-                    NavigationLink { DiaryDetailView(entry: e) } label: {
+                    NavigationLink {
+                        DiaryDetailView(entry: e)
+                    } label: {
                         HStack {
-                            Text(e.title)                              // 標題
+                            Text(e.title)
                             Spacer()
-                            Text(DateHelper.dateString(e.date))        // 日期
+                            Text(DateHelper.dateString(e.date))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -77,10 +86,29 @@ struct GoalDetailView: View {
         }
         .navigationTitle(goal.kind == .dream ? "夢想" : "目標")
         .toolbar {
-            Button(editing ? "完成" : "編輯") {
-                if editing { try? context.save() }
-                editing.toggle()
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                // 刪除按鈕
+                Button(role: .destructive) {
+                    showDeleteConfirm = true
+                } label: {
+                    Image(systemName: "trash")
+                }
+                // 編輯/完成 按鈕
+                Button(editing ? "完成" : "編輯") {
+                    if editing { try? context.save() }
+                    editing.toggle()
+                }
             }
+        }
+        .alert("確定要刪除這個目標？", isPresented: $showDeleteConfirm) {
+            Button("刪除", role: .destructive) {
+                context.delete(goal)
+                try? context.save()
+                dismiss()
+            }
+            Button("取消", role: .cancel) { }
+        } message: {
+            Text("刪除後無法復原")
         }
     }
 }
@@ -88,8 +116,9 @@ struct GoalDetailView: View {
 /// 工具：把 Optional Date 轉 Binding<Date>
 extension Binding where Value == Date? {
     init(_ source: Binding<Date?>, replacingNilWith defaultDate: Date) {
-        self.init(get: { source.wrappedValue ?? defaultDate },
-                  set: { source.wrappedValue = $0 })
+        self.init(
+            get: { source.wrappedValue ?? defaultDate },
+            set: { source.wrappedValue = $0 }
+        )
     }
 }
-

@@ -283,6 +283,10 @@ struct SimpleGoalRow: View {
                 Spacer()
             }
         }
+        .padding(12)
+        .background(Color(.secondarySystemBackground)).foregroundColor(.primary)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(radius: 1)
     }
 }
 
