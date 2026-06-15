@@ -41,6 +41,13 @@
 <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.13.15.png" width="200">
 <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-26 at 01.34.52.png" width="200">
 
+## Repository
+
+```bash
+git clone https://github.com/Ning0612/trace-ios-app.git
+cd trace-ios-app
+```
+
 ## 作者
 
 Developed for [iOS Programing Final Project APP], Department of Computer Science NTUST, Spring 2025.
