@@ -48,6 +48,15 @@ git clone https://github.com/Ning0612/trace-ios-app.git
 cd trace-ios-app
 ```
 
+## 授權
+
+Source code is released under the MIT License. See [LICENSE](LICENSE).
+
+The MIT License applies to the original source code only. Screenshots, the
+course report PDF, app icons, and other media assets are documented separately
+in [ASSET_CREDITS.md](ASSET_CREDITS.md) and are not covered by the source-code
+license unless explicitly stated.
+
 ## 作者
 
 Developed for [iOS Programing Final Project APP], Department of Computer Science NTUST, Spring 2025.
