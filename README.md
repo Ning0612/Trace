@@ -34,18 +34,45 @@
 
 ## 畫面截圖
 
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 22.14.29.png" width="200">
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 22.23.13.png" width="200">
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.10.28.png" width="200">
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.11.05.png" width="200">
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.11.15.png" width="200">
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.11.28.png" width="200">
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.12.04.png" width="200">
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.12.18.png" width="200">
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.12.32.png" width="200">
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.13.05.png" width="200">
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.13.15.png" width="200">
-<img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-26 at 01.34.52.png" width="200">
+> 截圖中的日記、目標與學習紀錄為專案展示資料。
+
+### 首頁總覽
+
+<p align="center">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 22.14.29.png" alt="首頁：目標進度、即將到期項目與最新日記" width="48%">
+</p>
+
+### 日記：瀏覽、閱讀與新增
+
+<p align="center">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 22.23.13.png" alt="日記列表" width="48%">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.10.28.png" alt="含圖片的日記內容" width="48%">
+</p>
+<p align="center">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.11.28.png" alt="日記內容" width="48%">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.12.18.png" alt="新增日記與照片選取" width="48%">
+</p>
+
+### 目標與夢想：追蹤與建立
+
+<p align="center">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.11.05.png" alt="夢想、進行中與已完成目標清單" width="48%">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.11.15.png" alt="已完成目標詳情與關聯日記" width="48%">
+</p>
+<p align="center">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.12.04.png" alt="新增目標與截止日期、進度設定" width="48%">
+</p>
+
+### 成長回顧：週、月與年度熱力圖
+
+<p align="center">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.12.32.png" alt="單日回顧" width="48%">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.13.05.png" alt="本週日記回顧" width="48%">
+</p>
+<p align="center">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-25 at 23.13.15.png" alt="本月日記回顧" width="48%">
+  <img src="Screenshots/Simulator Screenshot - iPad Air 11-inch (M2) - 2025-05-26 at 01.34.52.png" alt="年度日記熱力圖與成長統計" width="48%">
+</p>
 
 ## Repository
 
