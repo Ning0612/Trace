@@ -2,6 +2,8 @@
 
 「Trace」是一款日記與目標追蹤 iOS App，旨在幫助使用者紀錄日常、設定目標，並回顧自己的成長軌跡。
 
+> **課程專案**：國立臺灣科技大學｜113.2｜CS3042701｜iOS 程式設計｜期末專案
+
 ## 專案狀態
 
 本專案是 113.2 臺科 CS3042701「iOS 程式設計」期末專案。課程展示與公開整理已完成，後續不再持續維護。
@@ -60,9 +62,3 @@ The MIT License applies to the original source code only. Screenshots, the
 course report PDF, app icons, and other media assets are documented separately
 in [ASSET_CREDITS.md](ASSET_CREDITS.md) and are not covered by the source-code
 license unless explicitly stated.
-
-## 作者
-
-Developed for [iOS Programing Final Project APP], Department of Computer Science NTUST, Spring 2025.
-
-Author: Ning
