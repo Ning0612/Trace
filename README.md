@@ -65,4 +65,4 @@ license unless explicitly stated.
 
 Developed for [iOS Programing Final Project APP], Department of Computer Science NTUST, Spring 2025.
 
-Author: [Ning / B11110524]
+Author: Ning
